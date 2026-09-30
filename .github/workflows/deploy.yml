@@ -1,0 +1,31 @@
+name: deploy
+on: [push, workflow_dispatch]
+permissions:
+  pages: write
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - name: fetch site
+        run: |
+          mkdir site && cd site
+          B=https://8c9f2293-68ab-4f3a-a46c-87a8a4f3ffb4.frame.claudeusercontent.com
+          for f in model.meta.json scene_extra.json model-cfc5c292.p0.wasm model-cfc5c292.p1.wasm model-cfc5c292.p2.wasm; do
+            curl -fSL "$B/$f" -o "$f"
+          done
+          curl -fSL "$B/index.html" -o index.html || curl -fSL "$B/" -o index.html
+          touch .nojekyll
+          ls -la
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: d
+        uses: actions/deploy-pages@v4

@@ -11,14 +11,15 @@ jobs:
       name: github-pages
       url: ${{ steps.d.outputs.page_url }}
     steps:
-      - name: fetch site
+      - uses: actions/checkout@v4
+      - name: build site
         run: |
-          mkdir site && cd site
-          B=https://8c9f2293-68ab-4f3a-a46c-87a8a4f3ffb4.frame.claudeusercontent.com
-          for f in model.meta.json scene_extra.json model-cfc5c292.p0.wasm model-cfc5c292.p1.wasm model-cfc5c292.p2.wasm; do
-            curl -fSL "$B/$f" -o "$f"
-          done
-          curl -fSL "$B/index.html" -o index.html || curl -fSL "$B/" -o index.html
+          mkdir site
+          cp index.html model.meta.json scene_extra.json site/
+          cd site
+          curl -fL "https://drive.usercontent.google.com/download?id=1QP41CeERfrjrjPKwaER0CLoU6WTQ3zU7&export=download&confirm=t" -o model-cfc5c292.p0.wasm
+          curl -fL "https://drive.usercontent.google.com/download?id=1-MHuK0c-fXd7i_2OUawgOk9BP8-YeOgh&export=download&confirm=t" -o model-cfc5c292.p1.wasm
+          curl -fL "https://drive.usercontent.google.com/download?id=1cpb6W-N-TxG4WxT0D6iCQaMp5wMz7I6Z&export=download&confirm=t" -o model-cfc5c292.p2.wasm
           touch .nojekyll
           ls -la
       - uses: actions/configure-pages@v5

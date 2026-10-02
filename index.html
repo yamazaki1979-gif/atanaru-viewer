@@ -56,7 +56,7 @@ input[type=file]{display:none}
   <span class="chip" id="fs">全画面</span>
   <span id="meta"></span>
 </div>
-<div id="hint">ドラッグ=見回し ／ 右ドラッグ・2本指=平行移動 ／ ホイール・ピンチ=ズーム<br>キーボード: W/S=前進後進 A/D=回転 Q/E=高さ<br>glb/obj/stlをドロップで読み込み</div>
+<div id="hint">ドラッグ=見回し ／ 右ドラッグ・2本指=平行移動 ／ ホイール・ピンチ=ズーム<br>キーボード: W/S=前進後進 A/D=回転 Q/E=高さ R/F=首上げ下げ<br>glb/obj/stlをドロップで読み込み</div>
 <div id="drop">ここにドロップして読み込み</div>
 <div id="pad">
   <span class="pbtn" data-a="fwd">前進</span>
@@ -65,6 +65,8 @@ input[type=file]{display:none}
   <span class="pbtn" data-a="right">回転 ⟳</span>
   <span class="pbtn" data-a="up">高さ＋</span>
   <span class="pbtn" data-a="down">高さ−</span>
+  <span class="pbtn" data-a="tiltup">首上げ</span>
+  <span class="pbtn" data-a="tiltdown">首下げ</span>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -98,7 +100,7 @@ var camera=new THREE.PerspectiveCamera(50,1,0.05,500);
 var controls=(function(el){
   var tgt=new THREE.Vector3(0,2,0);
   var sph=new THREE.Spherical(30,1.1,0);
-  var MINP=0.05, MAXP=Math.PI*0.52;
+  var MINP=0.05, MAXP=Math.PI*0.95;
   function apply(){
     sph.phi=Math.max(MINP,Math.min(MAXP,sph.phi));
     sph.radius=Math.max(1.2,Math.min(140,sph.radius));
@@ -171,10 +173,18 @@ var controls=(function(el){
   function lift(d){
     tgt.y=Math.max(0.2,Math.min(60,tgt.y+d));apply();
   }
+  function tilt(a){
+    var v=tgt.clone().sub(camera.position);
+    var right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0);
+    v.applyAxisAngle(right,a);
+    tgt.copy(camera.position).add(v);
+    var off=camera.position.clone().sub(tgt);
+    sph.setFromVector3(off);apply();
+  }
   return {
     get target(){return tgt;},
     update:function(){setFromCamera();},
-    forward:forward, turn:turn, lift:lift
+    forward:forward, turn:turn, lift:lift, tilt:tilt
   };
 })(renderer.domElement);
 
@@ -185,7 +195,9 @@ var controls=(function(el){
     left: function(dt){controls.turn( 1.4*dt);},
     right:function(dt){controls.turn(-1.4*dt);},
     up:   function(dt){controls.lift( 4.5*dt);},
-    down: function(dt){controls.lift(-4.5*dt);}
+    down: function(dt){controls.lift(-4.5*dt);},
+    tiltup:  function(dt){controls.tilt( 0.9*dt);},
+    tiltdown:function(dt){controls.tilt(-0.9*dt);}
   };
   var held={},raf=null,prev=0;
   function tick(ts){
@@ -206,7 +218,7 @@ var controls=(function(el){
     b.addEventListener('pointercancel',function(){stop(a);});
     b.addEventListener('lostpointercapture',function(){stop(a);});
   });
-  var keymap={KeyW:'fwd',KeyS:'back',KeyA:'left',KeyD:'right',KeyQ:'down',KeyE:'up',
+  var keymap={KeyW:'fwd',KeyS:'back',KeyA:'left',KeyD:'right',KeyQ:'down',KeyE:'up',KeyR:'tiltup',KeyF:'tiltdown',
               ArrowUp:'fwd',ArrowDown:'back',ArrowLeft:'left',ArrowRight:'right'};
   window.addEventListener('keydown',function(e){
     var a=keymap[e.code];if(a){e.preventDefault();start(a);}

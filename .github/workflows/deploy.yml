@@ -18,7 +18,7 @@ jobs:
           cp index.html model.meta.json scene_extra.json site/
           cd site
           curl -fL "https://drive.usercontent.google.com/download?id=1QP41CeERfrjrjPKwaER0CLoU6WTQ3zU7&export=download&confirm=t" -o model-cfc5c292.p0.wasm
-          curl -fL "https://drive.usercontent.google.com/download?id=1-MHuK0c-fXd7i_2OUawgOk9BP8-YeOgh&export=download&confirm=t" -o model-cfc5c292.p1.wasm
+          curl -fL "https://drive.usercontent.google.com/download?id=1Cspzu-AVHyxEkszMsdY-CVoozheJQcfA&export=download&confirm=t" -o model-cfc5c292.p1.wasm
           curl -fL "https://drive.usercontent.google.com/download?id=1cpb6W-N-TxG4WxT0D6iCQaMp5wMz7I6Z&export=download&confirm=t" -o model-cfc5c292.p2.wasm
           touch .nojekyll
           ls -la

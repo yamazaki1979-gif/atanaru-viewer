@@ -56,11 +56,13 @@ input[type=file]{display:none}
   <span class="chip" id="fs">全画面</span>
   <span id="meta"></span>
 </div>
-<div id="hint">ドラッグ=見回し ／ 右ドラッグ・2本指=平行移動 ／ ホイール・ピンチ=ズーム<br>キーボード: W/S=前進後進 A/D=回転 Q/E=高さ R/F=首上げ下げ<br>glb/obj/stlをドロップで読み込み</div>
+<div id="hint">ドラッグ=見回し ／ 右ドラッグ・2本指=平行移動 ／ ホイール・ピンチ=ズーム<br>キーボード: W/S=前進後進 A/D=左右移動 ←→=回転 Q/E=高さ R/F=首上げ下げ<br>glb/obj/stlをドロップで読み込み</div>
 <div id="drop">ここにドロップして読み込み</div>
 <div id="pad">
   <span class="pbtn" data-a="fwd">前進</span>
   <span class="pbtn" data-a="back">後進</span>
+  <span class="pbtn" data-a="strafeL">← 左移動</span>
+  <span class="pbtn" data-a="strafeR">右移動 →</span>
   <span class="pbtn" data-a="left">⟲ 回転</span>
   <span class="pbtn" data-a="right">回転 ⟳</span>
   <span class="pbtn" data-a="up">高さ＋</span>
@@ -173,6 +175,12 @@ var controls=(function(el){
   function lift(d){
     tgt.y=Math.max(0.2,Math.min(60,tgt.y+d));apply();
   }
+  function strafe(d){
+    var right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0);
+    right.y=0;if(right.lengthSq()<1e-6)return;
+    right.normalize();
+    tgt.addScaledVector(right,d);apply();
+  }
   function tilt(a){
     var v=tgt.clone().sub(camera.position);
     var right=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0);
@@ -184,7 +192,7 @@ var controls=(function(el){
   return {
     get target(){return tgt;},
     update:function(){setFromCamera();},
-    forward:forward, turn:turn, lift:lift, tilt:tilt
+    forward:forward, turn:turn, lift:lift, tilt:tilt, strafe:strafe
   };
 })(renderer.domElement);
 
@@ -192,6 +200,8 @@ var controls=(function(el){
   var acts={
     fwd:  function(dt){controls.forward( 9*dt);},
     back: function(dt){controls.forward(-9*dt);},
+    strafeL:function(dt){controls.strafe(-6*dt);},
+    strafeR:function(dt){controls.strafe( 6*dt);},
     left: function(dt){controls.turn( 1.4*dt);},
     right:function(dt){controls.turn(-1.4*dt);},
     up:   function(dt){controls.lift( 4.5*dt);},
@@ -218,7 +228,7 @@ var controls=(function(el){
     b.addEventListener('pointercancel',function(){stop(a);});
     b.addEventListener('lostpointercapture',function(){stop(a);});
   });
-  var keymap={KeyW:'fwd',KeyS:'back',KeyA:'left',KeyD:'right',KeyQ:'down',KeyE:'up',KeyR:'tiltup',KeyF:'tiltdown',
+  var keymap={KeyW:'fwd',KeyS:'back',KeyA:'strafeL',KeyD:'strafeR',KeyQ:'down',KeyE:'up',KeyR:'tiltup',KeyF:'tiltdown',
               ArrowUp:'fwd',ArrowDown:'back',ArrowLeft:'left',ArrowRight:'right'};
   window.addEventListener('keydown',function(e){
     var a=keymap[e.code];if(a){e.preventDefault();start(a);}
